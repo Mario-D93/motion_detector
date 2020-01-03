@@ -1,12 +1,17 @@
-import cv2
-
+import cv2,time,pandas
+from datetime import datetime as dt
 initial_frame=None
+
+data_frame=pandas.DataFrame(columns=['Start','End'])
+
 
 #INPUT: index of the camera or path
 record=cv2.VideoCapture(0)
-
+status_ls=[None,None]
+times=[]
 while True:
 
+	status=0
 	control,frame=record.read()
 	#read() method returns boolean & numpy array
 
@@ -28,20 +33,33 @@ while True:
 	for cnt in contours:
 		if cv2.contourArea(cnt) < 1500:
 			continue
+		status=1
 
 		(x,y,w,h)=cv2.boundingRect(cnt)
-
 		#rectangle method will drow a rectangle in a current frame if a moving object appears in front of the camera
 		cv2.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 5)
+	status_ls.append(status)
 
+	if status_ls[-1]==1 and status_ls[-2]==0:
+		times.append(dt.now())
+	if status_ls[-1]==0 and status_ls[-2]==1:
+		times.append(dt.now())
 
 	#cv2.imshow('Record',gray_frame)
 	#cv2.imshow('Threshold frame',threshold)
-	cv2.imshow('Rectangle frame',frame)
 
+	cv2.imshow('Rectangle frame',frame)
 	key=cv2.waitKey(1)
 	if key == ord('q'):
+		if status==1:
+			times.append(dt.now())
 		break
 
+
+for i in range(0,len(times),2):
+	data_frame=data_frame.append({'Start':times[i],'End':times[i+1]},ignore_index=True)
+data_frame.to_csv("recorded_time.txt")	
+
+print(data_frame)
 record.release()
 cv2.destroyAllWindows
