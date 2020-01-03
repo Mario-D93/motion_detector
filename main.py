@@ -40,6 +40,8 @@ while True:
 		cv2.rectangle(frame, (x,y), (x+w, y+h), (0,0,255), 5)
 	status_ls.append(status)
 
+	status_ls=status_ls[-5:]
+
 	if status_ls[-1]==1 and status_ls[-2]==0:
 		times.append(dt.now())
 	if status_ls[-1]==0 and status_ls[-2]==1:
@@ -60,6 +62,6 @@ for i in range(0,len(times),2):
 	data_frame=data_frame.append({'Start':times[i],'End':times[i+1]},ignore_index=True)
 data_frame.to_csv("recorded_time.txt")	
 
-print(data_frame)
+#print(data_frame)
 record.release()
 cv2.destroyAllWindows
